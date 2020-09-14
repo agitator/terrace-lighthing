@@ -8,7 +8,7 @@
 #define NUM_LEDS    10
 #define BRIGHTNESS  64
 #define LED_TYPE    APA102
-#define COLOR_ORDER GRB // maybe if we change this to BGR we can use CRGB directly again (another branch for testing)
+#define COLOR_ORDER BGR 
 CRGB leds[NUM_LEDS];
 
 int currentProgram = -1;
@@ -126,28 +126,16 @@ void handle_RequestPost() {
     String colorValues = v.as<String>();
     int color = webcolorToInt(colorValues);
     Serial.println(color);
-    leds[index++] = convertRGBtoGBR(color);
+    leds[index++] = CRGB(color);
   }
   server.send(200);
 }
 
-int webcolorToInt(String webcolor)
+inline int webcolorToInt(String webcolor)
 {
     return strtol(webcolor.c_str(), 0, 16);
 }
 
-/**
- * cleaning up the function a little (even if its a bit slower)
- * we should be able to replace this with fastLeds CRGB, but I need hardware
- * to test that :)
- */
-int convertRGBtoGBR (int input) 
-{
-    int r = (input >> 16) & 0xFF;
-    int g = (input >>  8) & 0xFF;
-    int b = (input >>  0) & 0xFF;
-    return b<<16 | g<<8 | r;
-}
 
 String byteToHex(byte b) {
   char output[3];
