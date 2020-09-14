@@ -8,7 +8,7 @@
 #define NUM_LEDS    10
 #define BRIGHTNESS  64
 #define LED_TYPE    APA102
-#define COLOR_ORDER GRB
+#define COLOR_ORDER GRB // maybe if we change this to BGR we can use CRGB directly again (another branch for testing)
 CRGB leds[NUM_LEDS];
 
 int currentProgram = -1;
@@ -20,8 +20,9 @@ StaticJsonDocument<1024> doc;
 void setup() {
   Serial.begin(115200);
   WiFi.mode(WIFI_STA);
-  Serial.println(String("terrace-light-") + getMac());
-  WiFi.setHostname((String("terrace-light-") + getMac()).c_str());
+  String hostname = String("terrace-light-") + getMac(1);
+  Serial.println(hostname);
+  WiFi.setHostname(hostname.c_str());
   WiFi.setSleep(false);
   WiFi.begin("express", "lets1get2wireless3");
 
@@ -123,70 +124,30 @@ void handle_RequestPost() {
   for (JsonVariant v : array)
   {
     String colorValues = v.as<String>();
-    int c = strtol(colorValues.c_str(), 0, 16);
-    Serial.println(c);
-    int r = (c & 0xff0000) >> 16;
-    int g = (c & 0x00ff00) << 8 ;
-    int b = (c & 0x0000ff) << 8;
-
-    leds[index++] = b|g|r;
+    int color = webcolorToInt(colorValues);
+    Serial.println(color);
+    leds[index++] = convertRGBtoGBR(color);
   }
   server.send(200);
 }
 
-// void checkClients() {
-//   String header = "";
-//   WiFiClient client = server.available();
+int webcolorToInt(String webcolor)
+{
+    return strtol(webcolor.c_str(), 0, 16);
+}
 
-//   if (client) {
-//     Serial.println("Client connected");
-//     String currentLine = "";
-
-//     while (client.connected()) {
-//       if (client.available()) {
-//         char c = client.read();
-//         Serial.write(c);
-//         header += c;
-//         if (c == '\n') {
-//           if (currentLine.length() == 0) {
-
-
-//             if (header.indexOf("POST /api?program=") >= 0) {
-//               int valueStart = header.indexOf('=');
-//               int valueEnd = header.indexOf("HTTP");
-//               String value = header.substring(valueStart + 1, valueEnd - 1);
-//               int _program = atoi(value.c_str());
-//               newProgram = _program;
-//               Serial.println(_program);
-
-//             }
-
-//             sendHtmlHeader(client);
-
-//             client.println();
-//             break;
-
-//           } else {
-//             currentLine = "";
-//           }
-
-//         } else if (c != '\r') {
-//           currentLine += c;
-//         }
-//       }
-//     }
-//     client.stop();
-//     Serial.println("Client disconnected");
-//   }
-// }
-
-
-// void sendHtmlHeader(WiFiClient &client) {
-//   client.println("HTTP/1.1 200 OK");
-//   client.println("Content-type:text/html");
-//   client.println("Connection: close");
-//   client.println();
-// }
+/**
+ * cleaning up the function a little (even if its a bit slower)
+ * we should be able to replace this with fastLeds CRGB, but I need hardware
+ * to test that :)
+ */
+int convertRGBtoGBR (int input) 
+{
+    int r = (input >> 16) & 0xFF;
+    int g = (input >>  8) & 0xFF;
+    int b = (input >>  0) & 0xFF;
+    return b<<16 | g<<8 | r;
+}
 
 String byteToHex(byte b) {
   char output[3];
@@ -201,14 +162,13 @@ String byteToHex(byte b) {
   return String(output);
 }
 
-String getMac() {
+String getMac(int length) {
   byte mac[6];
   WiFi.macAddress(mac);
-  // return byteToHex(mac[0]) +
-  //        byteToHex(mac[1]) +
-  //        byteToHex(mac[2]) +
-  //        byteToHex(mac[3]) +
-  //        byteToHex(mac[4]) +
-  //        byteToHex(mac[5]);
-  return byteToHex(mac[5]);
+  String s = "";
+  
+  for(int i=0; i<length; i++) {
+    s = byteToHex(mac[5-i]) + s;
+  }
+  return s;
 }
