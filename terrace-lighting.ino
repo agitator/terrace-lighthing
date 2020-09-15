@@ -8,7 +8,7 @@
 #define NUM_LEDS    10
 #define BRIGHTNESS  64
 #define LED_TYPE    APA102
-#define COLOR_ORDER BGR 
+#define COLOR_ORDER BGR
 CRGB leds[NUM_LEDS];
 
 int currentProgram = -1;
@@ -25,8 +25,10 @@ void setup() {
   WiFi.setHostname(hostname.c_str());
   WiFi.setSleep(false);
   WiFi.begin("express", "lets1get2wireless3");
+  Serial.println("v1.0");
 
-  while (WiFi.status() != WL_CONNECTED) {
+  while (WiFi.status() != WL_CONNECTED)
+  {
     delay(500);
     Serial.print(".");
   }
@@ -154,7 +156,7 @@ String getMac(int length) {
   byte mac[6];
   WiFi.macAddress(mac);
   String s = "";
-  
+
   for(int i=0; i<length; i++) {
     s = byteToHex(mac[5-i]) + s;
   }
