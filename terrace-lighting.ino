@@ -123,13 +123,21 @@ void handle_RequestPost() {
 
   int index = 0;
 
+  CRGB newColors[2];
   for (JsonVariant v : array)
   {
     String colorValues = v.as<String>();
     int color = webcolorToInt(colorValues);
     Serial.println(color);
-    leds[index++] = CRGB(color);
+    newColors[index++] = CRGB(color);
   }
+
+  for(int i=0; i<NUM_LEDS; i++){
+    Serial.print("steps ");
+    Serial.println((1.0f/NUM_LEDS)*i);
+    leds[i] = lerp(newColors[0], newColors[1], (1.0f/NUM_LEDS)*i);
+  }
+
   server.send(200);
 }
 
@@ -138,6 +146,14 @@ inline int webcolorToInt(String webcolor)
     return strtol(webcolor.c_str(), 0, 16);
 }
 
+
+CRGB lerp(const CRGB a, const CRGB b, float pos) {
+  CRGB(
+     (uint8_t) (((b.r - a.r) * pos) + a.r),
+     (uint8_t) (((b.g - a.g) * pos) + a.g),
+     (uint8_t) (((b.b - a.b) * pos) + a.b)
+   );
+}
 
 String byteToHex(byte b) {
   char output[3];
