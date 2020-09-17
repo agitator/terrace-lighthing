@@ -134,8 +134,9 @@ void handle_RequestPost() {
 
   for(int i=0; i<NUM_LEDS; i++){
     Serial.print("steps ");
-    Serial.println((1.0f/NUM_LEDS)*i);
-    leds[i] = lerp(newColors[0], newColors[1], (1.0f/(NUM_LEDS-1))*i);
+    float percentage = (1.0f/(NUM_LEDS-1))*i;
+    Serial.println(percentage);
+    leds[i] = lerp(newColors[0], newColors[1], percentage);
   }
 
   server.send(200);
