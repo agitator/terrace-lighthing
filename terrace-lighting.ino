@@ -135,7 +135,7 @@ void handle_RequestPost() {
   for(int i=0; i<NUM_LEDS; i++){
     Serial.print("steps ");
     Serial.println((1.0f/NUM_LEDS)*i);
-    leds[i] = lerp(newColors[0], newColors[1], (1.0f/NUM_LEDS)*i);
+    leds[i] = lerp(newColors[0], newColors[1], (1.0f/(NUM_LEDS-1))*i);
   }
 
   server.send(200);
@@ -148,7 +148,7 @@ inline int webcolorToInt(String webcolor)
 
 
 CRGB lerp(const CRGB a, const CRGB b, float pos) {
-  CRGB(
+  return CRGB(
      (uint8_t) (((b.r - a.r) * pos) + a.r),
      (uint8_t) (((b.g - a.g) * pos) + a.g),
      (uint8_t) (((b.b - a.b) * pos) + a.b)
